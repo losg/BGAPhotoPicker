@@ -73,6 +73,16 @@ public class BGAPhotoPreviewActivity extends BGAPPToolbarActivity implements Pho
      */
     private long mLastShowHiddenTime;
 
+
+    public static Intent newIntent(Context context, File saveImgDir, ArrayList<String> previewImages, int currentPosition) {
+        IntentBuilder intentBuilder = new IntentBuilder(context);
+        intentBuilder.saveImgDir(saveImgDir);
+        intentBuilder.previewPhotos(previewImages);
+        intentBuilder.currentPosition(currentPosition);
+        return intentBuilder.build();
+    }
+
+
     public static class IntentBuilder {
         private Intent mIntent;
 
