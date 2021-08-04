@@ -116,6 +116,20 @@ public class BGAPhotoPickerActivity extends BGAPPToolbarActivity implements BGAO
         }
     };
 
+    public static Intent newIntent(Context context, File imageDir, int maxChooseCount, ArrayList<String> selectedImages, boolean pauseOnScroll) {
+        BGAPhotoPickerActivity.IntentBuilder intentBuilder = new BGAPhotoPickerActivity.IntentBuilder(context);
+        intentBuilder.cameraFileDir(imageDir);
+        intentBuilder.maxChooseCount(maxChooseCount);
+        intentBuilder.selectedPhotos(selectedImages);
+        intentBuilder.pauseOnScroll(pauseOnScroll);
+        return intentBuilder.build();
+    }
+
+    public static ArrayList<String> getSelectedImages(Intent intent) {
+        return intent.getStringArrayListExtra(EXTRA_SELECTED_PHOTOS);
+    }
+
+
     public static class IntentBuilder {
         private Intent mIntent;
 

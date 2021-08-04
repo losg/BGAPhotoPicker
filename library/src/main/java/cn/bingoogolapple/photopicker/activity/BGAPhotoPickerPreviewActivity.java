@@ -77,6 +77,27 @@ public class BGAPhotoPickerPreviewActivity extends BGAPPToolbarActivity implemen
      */
     private boolean mIsFromTakePhoto;
 
+
+    /**
+     * 获取已选择的图片集合
+     *
+     * @param intent
+     * @return
+     */
+    public static ArrayList<String> getSelectedImages(Intent intent) {
+        return intent.getStringArrayListExtra(EXTRA_SELECTED_PHOTOS);
+    }
+
+    public static Intent newIntent(Context context, int maxChooseCount, ArrayList<String> selectedImages, ArrayList<String> previewImages, int currentPosition, boolean isFromTakePhoto) {
+        BGAPhotoPickerPreviewActivity.IntentBuilder intentBuilder = new BGAPhotoPickerPreviewActivity.IntentBuilder(context);
+        intentBuilder.maxChooseCount(maxChooseCount);
+        intentBuilder.selectedPhotos(selectedImages);
+        intentBuilder.previewPhotos(previewImages);
+        intentBuilder.isFromTakePhoto(isFromTakePhoto);
+        intentBuilder.currentPosition(currentPosition);
+        return intentBuilder.build();
+    }
+
     public static class IntentBuilder {
         private Intent mIntent;
 
