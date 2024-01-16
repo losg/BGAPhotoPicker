@@ -65,7 +65,7 @@ public class BGALoadPhotoTask extends BGAAsyncTask<Void, ArrayList<BGAPhotoFolde
         ArrayList<BGAPhotoFolderModel> imageFolderModels = new ArrayList<>();
 
         BGAPhotoFolderModel allImageFolderModel = new BGAPhotoFolderModel(mTakePhotoEnabled);
-        allImageFolderModel.name = mContext.getString(R.string.bga_pp_all_image);
+        allImageFolderModel.name = "最近图片";
         imageFolderModels.add(allImageFolderModel);
 
         HashMap<String, BGAPhotoFolderModel> imageFolderModelMap = new HashMap<>();
@@ -77,7 +77,7 @@ public class BGALoadPhotoTask extends BGAAsyncTask<Void, ArrayList<BGAPhotoFolde
                     new String[]{MediaStore.Images.Media.DATA},
                     MediaStore.Images.Media.MIME_TYPE + "=? or " + MediaStore.Images.Media.MIME_TYPE + "=? or " + MediaStore.Images.Media.MIME_TYPE + "=?",
                     new String[]{"image/jpeg", "image/png", "image/jpg"},
-                    MediaStore.Images.Media.DATE_ADDED + " DESC"
+                    MediaStore.Images.Media.DATE_ADDED + " DESC limit 0,5"
             );
 
             BGAPhotoFolderModel otherImageFolderModel;
