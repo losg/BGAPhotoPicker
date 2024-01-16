@@ -77,7 +77,7 @@ public class BGALoadPhotoTask extends BGAAsyncTask<Void, ArrayList<BGAPhotoFolde
                     new String[]{MediaStore.Images.Media.DATA},
                     MediaStore.Images.Media.MIME_TYPE + "=? or " + MediaStore.Images.Media.MIME_TYPE + "=? or " + MediaStore.Images.Media.MIME_TYPE + "=?",
                     new String[]{"image/jpeg", "image/png", "image/jpg"},
-                    MediaStore.Images.Media.DATE_ADDED + " DESC limit 0,5"
+                    MediaStore.Images.Media.DATE_ADDED + " DESC limit 0,3000"
             );
 
             BGAPhotoFolderModel otherImageFolderModel;
