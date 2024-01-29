@@ -15,133 +15,55 @@
  */
 package cn.bingoogolapple.photopicker.util;
 
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.media.MediaScannerConnection;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
-import android.provider.MediaStore;
-import android.support.v4.content.FileProvider;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.lang.ref.SoftReference;
-import java.sql.NClob;
-
-import cn.bingoogolapple.photopicker.R;
 
 /**
  * 作者:王浩 邮件:bingoogolapple@gmail.com
- * 创建时间:16/6/25 下午6:49
+ * 创建时间:16/6/25 下午6:30
  * 描述:
  */
-public class BGASavePhotoTask extends BGAAsyncTask<Void, String> {
-    private Context               mContext;
-    private SoftReference<Bitmap> mBitmap;
-    private File                  mNewFile;
+public abstract class BGAAsyncTask<Params, Result> extends AsyncTask<Params, Void, Result> {
+    private Callback<Result> mCallback;
 
-    public BGASavePhotoTask(Callback<String> callback, Context context, File newFile) {
-        super(callback);
-        mContext = context.getApplicationContext();
-        mNewFile = newFile;
+    public BGAAsyncTask(Callback<Result> callback) {
+        mCallback = callback;
     }
 
-    public void setBitmapAndPerform(Bitmap bitmap) {
-        mBitmap = new SoftReference<>(bitmap);
-
-        if (Build.VERSION.SDK_INT >= 11) {
-            executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        } else {
-            execute();
+    public void cancelTask() {
+        if (getStatus() != Status.FINISHED) {
+            cancel(true);
         }
     }
 
     @Override
-    protected String doInBackground(Void... params) {
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(mNewFile);
-            mBitmap.get().compress(Bitmap.CompressFormat.PNG, 100, fos);
-            fos.flush();
-            BGAPhotoPickerUtil.showSafe(mContext.getString(R.string.bga_pp_save_img_success_folder, mNewFile.getParentFile().getAbsolutePath()));
-            return mNewFile.getAbsolutePath();
-        } catch (Exception e) {
-            BGAPhotoPickerUtil.showSafe(R.string.bga_pp_save_img_failure);
-        } finally {
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    BGAPhotoPickerUtil.showSafe(R.string.bga_pp_save_img_failure);
-                }
-            }
-            recycleBitmap();
-        }
-        return null;
-    }
-
-    @Override
-    protected void onPostExecute(String savePath) {
-        if (savePath == null) {
-            return;
-        }
-        broadCastPicChange(savePath);
-    }
-
-    private void broadCastPicChange(String savePath) {
-        File file = new File(savePath);
-        if (Build.VERSION.SDK_INT < 19) {
-            mContext.sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.fromFile(file)));
-            return;
-        }
-        if (Build.VERSION.SDK_INT >= 29) {
-            autoScanFile(mContext, file.getName(), file.getAbsolutePath());
-        }
-        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        Uri uri = null;
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-            uri = FileProvider.getUriForFile(mContext, mContext.getPackageName() + ".fileprovider", file);
-        } else {
-            uri = Uri.fromFile(file);
-        }
-        intent.setData(uri);
-        mContext.sendBroadcast(intent);
-    }
-
-
-
-    private static void autoScanFile(Context context,String fileName,String filePath){
-        try {
-            ContentResolver resolver = context.getContentResolver();
-            Uri uri = MediaStore.Files.getContentUri("external");
-
-            ContentValues values = new ContentValues();
-            values.put(MediaStore.Files.FileColumns.DATA, filePath);
-            values.put(MediaStore.Files.FileColumns.TITLE, fileName);
-            values.put(MediaStore.Files.FileColumns.MIME_TYPE, "image/jpeg");
-            uri = resolver.insert(uri, values);
-            MediaScannerConnection.scanFile(context, new String[]{filePath}, null, null);
-        }catch (Exception e) {
-
+    protected void onPostExecute(Result result) {
+        super.onPostExecute(result);
+        if (mCallback != null) {
+            mCallback.onPostExecute(result);
         }
     }
 
     @Override
     protected void onCancelled() {
         super.onCancelled();
-        recycleBitmap();
-    }
-
-    private void recycleBitmap() {
-        if (mBitmap != null && mBitmap.get() != null && !mBitmap.get().isRecycled()) {
-            mBitmap.get().recycle();
-            mBitmap = null;
+        if (mCallback != null) {
+            mCallback.onTaskCancelled();
         }
+        //无法放到 cancelTask()中，因为此方法会在cancelTask()后执行，所以如果放到cancelTask()中，则此字段永远是空，也就不会调用 onCancel()方法了
+        mCallback = null;
     }
 
+    public interface Callback<Result> {
+        /**
+         * 当结果返回的时候执行
+         *
+         * @param result 返回的结果
+         */
+        void onPostExecute(Result result);
+
+        /**
+         * 当请求被取消的时候执行
+         */
+        void onTaskCancelled();
+    }
 }
