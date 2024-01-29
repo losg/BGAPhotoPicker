@@ -51,7 +51,7 @@ import uk.co.senab.photoview.PhotoViewAttacher;
  * 创建时间:16/6/24 下午2:59
  * 描述:图片预览界面
  */
-public class BGAPhotoPreviewActivity extends BGAPPToolbarActivity implements PhotoViewAttacher.OnViewTapListener, BGAAsyncTask.Callback<Void> {
+public class BGAPhotoPreviewActivity extends BGAPPToolbarActivity implements PhotoViewAttacher.OnViewTapListener, BGAAsyncTask.Callback<String> {
     private static final String EXTRA_SAVE_PHOTO_DIR = "EXTRA_SAVE_PHOTO_DIR";
     private static final String EXTRA_PREVIEW_PHOTOS = "EXTRA_PREVIEW_PHOTOS";
     private static final String EXTRA_CURRENT_POSITION = "EXTRA_CURRENT_POSITION";
@@ -282,7 +282,7 @@ public class BGAPhotoPreviewActivity extends BGAPPToolbarActivity implements Pho
     }
 
     @Override
-    public void onPostExecute(Void aVoid) {
+    public void onPostExecute(String aVoid) {
         mSavePhotoTask = null;
     }
 
