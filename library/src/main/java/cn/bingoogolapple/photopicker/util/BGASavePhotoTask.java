@@ -15,17 +15,23 @@
  */
 package cn.bingoogolapple.photopicker.util;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
+import java.sql.NClob;
 
 import cn.bingoogolapple.photopicker.R;
 
@@ -34,12 +40,12 @@ import cn.bingoogolapple.photopicker.R;
  * 创建时间:16/6/25 下午6:49
  * 描述:
  */
-public class BGASavePhotoTask extends BGAAsyncTask<Void, Void> {
-    private Context mContext;
+public class BGASavePhotoTask extends BGAAsyncTask<Void, String> {
+    private Context               mContext;
     private SoftReference<Bitmap> mBitmap;
-    private File mNewFile;
+    private File                  mNewFile;
 
-    public BGASavePhotoTask(Callback<Void> callback, Context context, File newFile) {
+    public BGASavePhotoTask(Callback<String> callback, Context context, File newFile) {
         super(callback);
         mContext = context.getApplicationContext();
         mNewFile = newFile;
@@ -56,17 +62,14 @@ public class BGASavePhotoTask extends BGAAsyncTask<Void, Void> {
     }
 
     @Override
-    protected Void doInBackground(Void... params) {
+    protected String doInBackground(Void... params) {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(mNewFile);
             mBitmap.get().compress(Bitmap.CompressFormat.PNG, 100, fos);
             fos.flush();
-
-            // 通知图库更新
-            mContext.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(mNewFile)));
-
             BGAPhotoPickerUtil.showSafe(mContext.getString(R.string.bga_pp_save_img_success_folder, mNewFile.getParentFile().getAbsolutePath()));
+            return mNewFile.getAbsolutePath();
         } catch (Exception e) {
             BGAPhotoPickerUtil.showSafe(R.string.bga_pp_save_img_failure);
         } finally {
@@ -80,6 +83,52 @@ public class BGASavePhotoTask extends BGAAsyncTask<Void, Void> {
             recycleBitmap();
         }
         return null;
+    }
+
+    @Override
+    protected void onPostExecute(String savePath) {
+        if (savePath == null) {
+            return;
+        }
+        broadCastPicChange(savePath);
+    }
+
+    private void broadCastPicChange(String savePath) {
+        File file = new File(savePath);
+        if (Build.VERSION.SDK_INT < 19) {
+            mContext.sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.fromFile(file)));
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= 29) {
+            autoScanFile(mContext, file.getName(), file.getAbsolutePath());
+        }
+        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        Uri uri = null;
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+            uri = FileProvider.getUriForFile(mContext, mContext.getPackageName() + ".fileprovider", file);
+        } else {
+            uri = Uri.fromFile(file);
+        }
+        intent.setData(uri);
+        mContext.sendBroadcast(intent);
+    }
+
+
+
+    private static void autoScanFile(Context context,String fileName,String filePath){
+        try {
+            ContentResolver resolver = context.getContentResolver();
+            Uri uri = MediaStore.Files.getContentUri("external");
+
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Files.FileColumns.DATA, filePath);
+            values.put(MediaStore.Files.FileColumns.TITLE, fileName);
+            values.put(MediaStore.Files.FileColumns.MIME_TYPE, "image/jpeg");
+            uri = resolver.insert(uri, values);
+            MediaScannerConnection.scanFile(context, new String[]{filePath}, null, null);
+        }catch (Exception e) {
+
+        }
     }
 
     @Override
