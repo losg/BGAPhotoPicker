@@ -87,6 +87,7 @@ public class BGASavePhotoTask extends BGAAsyncTask<Void, String> {
 
     @Override
     protected void onPostExecute(String savePath) {
+        super.onPostExecute(savePath);
         if (savePath == null) {
             return;
         }
