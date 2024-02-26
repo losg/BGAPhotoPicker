@@ -41,6 +41,7 @@ import cn.bingoogolapple.photopicker.adapter.BGAPhotoPageAdapter;
 import cn.bingoogolapple.photopicker.imageloader.BGAImage;
 import cn.bingoogolapple.photopicker.imageloader.BGAImageLoader;
 import cn.bingoogolapple.photopicker.util.BGAAsyncTask;
+import cn.bingoogolapple.photopicker.util.BGAImageSavePhotoTask;
 import cn.bingoogolapple.photopicker.util.BGAPhotoPickerUtil;
 import cn.bingoogolapple.photopicker.util.BGASavePhotoTask;
 import cn.bingoogolapple.photopicker.widget.BGAHackyViewPager;
@@ -66,7 +67,7 @@ public class BGAPhotoPreviewActivity extends BGAPPToolbarActivity implements Pho
     private File mSavePhotoDir;
 
     private boolean mIsHidden = false;
-    private BGASavePhotoTask mSavePhotoTask;
+    private BGAImageSavePhotoTask mSavePhotoTask;
 
     /**
      * 上一次标题栏显示或隐藏的时间戳
@@ -181,9 +182,7 @@ public class BGAPhotoPreviewActivity extends BGAPPToolbarActivity implements Pho
         mDownloadIv.setOnClickListener(new BGAOnNoDoubleClickListener() {
             @Override
             public void onNoDoubleClick(View v) {
-                if (mSavePhotoTask == null) {
-                    savePic();
-                }
+                savePic();
             }
         });
 
@@ -243,10 +242,6 @@ public class BGAPhotoPreviewActivity extends BGAPPToolbarActivity implements Pho
     }
 
     private synchronized void savePic() {
-        if (mSavePhotoTask != null) {
-            return;
-        }
-
         final String url = mPhotoPageAdapter.getItem(mContentHvp.getCurrentItem());
         File file;
         if (url.startsWith("file")) {
@@ -259,44 +254,38 @@ public class BGAPhotoPreviewActivity extends BGAPPToolbarActivity implements Pho
 
         // 通过MD5加密url生成文件名，避免多次保存同一张图片
         file = new File(mSavePhotoDir, BGAPhotoPickerUtil.md5(url)+ System.currentTimeMillis() + ".png");
-        if (file.exists()) {
-            BGAPhotoPickerUtil.showSafe(getString(R.string.bga_pp_save_img_success_folder, mSavePhotoDir.getAbsolutePath()));
-            return;
-        }
 
-        mSavePhotoTask = new BGASavePhotoTask(this, this, file);
-        BGAImage.download(url, new BGAImageLoader.DownloadDelegate() {
-            @Override
-            public void onSuccess(String url, Bitmap bitmap) {
-                if (mSavePhotoTask != null) {
-                    mSavePhotoTask.setBitmapAndPerform(bitmap);
-                }
-            }
-
-            @Override
-            public void onFailed(String url) {
-                mSavePhotoTask = null;
-                BGAPhotoPickerUtil.show(R.string.bga_pp_save_img_failure);
-            }
-        });
+        mSavePhotoTask = new BGAImageSavePhotoTask(this, this, file);
+        mSavePhotoTask.startDownLoadUrl(url);
+//
+//        BGAImage.download(url, new BGAImageLoader.DownloadDelegate() {
+//            @Override
+//            public void onSuccess(String url, Bitmap bitmap) {
+//                if (mSavePhotoTask != null) {
+//                    mSavePhotoTask.setBitmapAndPerform(bitmap);
+//                }
+//            }
+//
+//            @Override
+//            public void onFailed(String url) {
+//                mSavePhotoTask = null;
+//                BGAPhotoPickerUtil.show(R.string.bga_pp_save_img_failure);
+//            }
+//        });
     }
 
     @Override
     public void onPostExecute(String aVoid) {
-        mSavePhotoTask = null;
+
     }
 
     @Override
     public void onTaskCancelled() {
-        mSavePhotoTask = null;
+
     }
 
     @Override
     protected void onDestroy() {
-        if (mSavePhotoTask != null) {
-            mSavePhotoTask.cancelTask();
-            mSavePhotoTask = null;
-        }
         super.onDestroy();
     }
 }
