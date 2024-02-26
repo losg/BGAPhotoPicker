@@ -258,7 +258,7 @@ public class BGAPhotoPreviewActivity extends BGAPPToolbarActivity implements Pho
         }
 
         // 通过MD5加密url生成文件名，避免多次保存同一张图片
-        file = new File(mSavePhotoDir, BGAPhotoPickerUtil.md5(url) + ".png");
+        file = new File(mSavePhotoDir, BGAPhotoPickerUtil.md5(url)+ System.currentTimeMillis() + ".png");
         if (file.exists()) {
             BGAPhotoPickerUtil.showSafe(getString(R.string.bga_pp_save_img_success_folder, mSavePhotoDir.getAbsolutePath()));
             return;
