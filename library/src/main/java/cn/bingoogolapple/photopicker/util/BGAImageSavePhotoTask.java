@@ -85,7 +85,7 @@ public class BGAImageSavePhotoTask extends BGAAsyncTask<Void, String> {
             byte[] read = new byte[2 * 1024];
             int readLen;
             while ((readLen = inputStream.read(read)) > -1) {
-                fileOutputStream.write(readLen);
+                fileOutputStream.write(read,0,readLen);
             }
             fileOutputStream.close();
             return mNewFile.getAbsolutePath();
