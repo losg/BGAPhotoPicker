@@ -28,7 +28,8 @@ import java.util.HashMap;
 
 import cn.bingoogolapple.photopicker.R;
 import cn.bingoogolapple.photopicker.model.BGAPhotoFolderModel;
-
+import android.content.ContentResolver;
+import android.os.Bundle;
 /**
  * 作者:王浩 邮件:bingoogolapple@gmail.com
  * 创建时间:16/7/8 上午10:32
@@ -72,13 +73,24 @@ public class BGALoadPhotoTask extends BGAAsyncTask<Void, ArrayList<BGAPhotoFolde
 
         Cursor cursor = null;
         try {
-            cursor = mContext.getContentResolver().query(
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                    new String[]{MediaStore.Images.Media.DATA},
-                    MediaStore.Images.Media.MIME_TYPE + "=? or " + MediaStore.Images.Media.MIME_TYPE + "=? or " + MediaStore.Images.Media.MIME_TYPE + "=?",
-                    new String[]{"image/jpeg", "image/png", "image/jpg"},
-                    MediaStore.Images.Media.DATE_ADDED + " DESC limit 0,3000"
-            );
+            if(Build.VERSION.SDK_INT >= 30){
+                Bundle bundle = new Bundle();
+                bundle.putString(ContentResolver.QUERY_ARG_SQL_SELECTION,"mime_type=? or mime_type=? or mime_type=?");
+                bundle.putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, new String[]{"image/jpeg", "image/png", "image/jpg"});
+                bundle.putStringArray(ContentResolver.QUERY_ARG_SORT_COLUMNS, new String[]{MediaStore.Images.Media.DATE_ADDED});
+                bundle.putInt(ContentResolver.QUERY_ARG_SORT_DIRECTION, ContentResolver.QUERY_SORT_DIRECTION_DESCENDING);
+                bundle.putInt(ContentResolver.QUERY_ARG_LIMIT,3000);
+                bundle.putInt(ContentResolver.QUERY_ARG_OFFSET,0);
+                cursor = mContext.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,new String[]{"_data"},bundle,null);
+            }else{
+                cursor = mContext.getContentResolver().query(
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        new String[]{MediaStore.Images.Media.DATA},
+                        MediaStore.Images.Media.MIME_TYPE + "=? or " + MediaStore.Images.Media.MIME_TYPE + "=? or " + MediaStore.Images.Media.MIME_TYPE + "=?",
+                        new String[]{"image/jpeg", "image/png", "image/jpg"},
+                        MediaStore.Images.Media.DATE_ADDED + " DESC limit 0,3000"
+                );
+            }
 
             BGAPhotoFolderModel otherImageFolderModel;
             if (cursor != null && cursor.getCount() > 0) {
