@@ -101,8 +101,11 @@ public class BGASavePhotoTask extends BGAAsyncTask<Void, String> {
             return;
         }
         if (Build.VERSION.SDK_INT >= 29) {
-           MediaStore.Images.Media.insertImage(mContext.getContentResolver(), file.getAbsolutePath(), file.getName(), null);
-           return;
+            try {
+                MediaStore.Images.Media.insertImage(mContext.getContentResolver(), file.getAbsolutePath(), file.getName(), null);
+                return
+            } catch (Exception e) {
+            }
         }
         autoScanFile(mContext, file.getName(), file.getAbsolutePath());
         Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
