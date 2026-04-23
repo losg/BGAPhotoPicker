@@ -97,11 +97,6 @@ public class BGALoadPhotoTask extends BGAAsyncTask<Void, ArrayList<BGAPhotoFolde
                 boolean firstInto = true;
                 while (cursor.moveToNext()) {
                     String imagePath = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
-
-                    if (isNotImageFile(imagePath)) {
-                        continue;
-                    }
-
                     if (firstInto) {
                         allImageFolderModel.coverPath = imagePath;
                         firstInto = false;
