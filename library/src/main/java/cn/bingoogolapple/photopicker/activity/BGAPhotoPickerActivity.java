@@ -292,6 +292,15 @@ public class BGAPhotoPickerActivity extends BGAPPToolbarActivity implements BGAO
      * @param selectedPhotos
      */
     private void returnSelectedPhotos(ArrayList<String> selectedPhotos) {
+        ArrayList<String> returnImgs = new ArrayList<>();
+        for (String selectedPhoto : selectedPhotos) {
+            if(new File(selectedPhoto).exists()){
+                returnImgs.add(selectedPhoto);
+            }
+        }
+        if(returnImgs.size() != selectedPhotos.size()){
+            Toast.makeText(this, "部分图片已失效", Toast.LENGTH_SHORT).show();
+        }
         Intent intent = new Intent();
         intent.putStringArrayListExtra(EXTRA_SELECTED_PHOTOS, selectedPhotos);
         setResult(RESULT_OK, intent);
