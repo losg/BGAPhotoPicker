@@ -243,9 +243,13 @@ public class BGAPhotoPickerPreviewActivity extends BGAPPToolbarActivity implemen
         } else {
             previewPhotos = getIntent().getStringArrayListExtra(EXTRA_PREVIEW_PHOTOS);
         }
-        if (TextUtils.isEmpty(previewPhotos.get(0))) {
+        if (previewPhotos!= null && previewPhotos.size() > 0 && TextUtils.isEmpty(previewPhotos.get(0))) {
             // 从BGAPhotoPickerActivity跳转过来时，如果有开启拍照功能，则第0项为""
             previewPhotos.remove(0);
+        }
+
+        if(previewPhotos == null){
+            previewPhotos = new ArrayList();
         }
 
         // 处理是否是拍完照后跳转过来
