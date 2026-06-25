@@ -171,7 +171,7 @@ public class BGAPhotoPickerPreviewActivity extends BGAPPToolbarActivity implemen
      * @return
      */
     public static boolean getIsFromTakePhoto(Intent intent) {
-        return intent.getBooleanExtra(EXTRA_IS_FROM_TAKE_PHOTO, false);
+        return intent != null && intent.getBooleanExtra(EXTRA_IS_FROM_TAKE_PHOTO, false);
     }
 
     @Override
