@@ -103,7 +103,8 @@ public class BGAImageSavePhotoTask extends BGAAsyncTask<Void, String> {
         }
         if (mCallback.get() != null)
             BGAPhotoPickerUtil.showSafe(mContext.getString(R.string.bga_pp_save_img_success_folder, mNewFile.getParentFile().getAbsolutePath()));
-        broadCastPicChange(savePath);
+        if(savaPath != null)
+            broadCastPicChange(savePath);
     }
 
     private void broadCastPicChange(String savePath) {
