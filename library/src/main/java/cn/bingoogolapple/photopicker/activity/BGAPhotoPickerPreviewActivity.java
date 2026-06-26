@@ -248,8 +248,9 @@ public class BGAPhotoPickerPreviewActivity extends BGAPPToolbarActivity implemen
             previewPhotos.remove(0);
         }
 
-        if(previewPhotos == null){
-            previewPhotos = new ArrayList();
+        if(previewPhotos == null || previewPhotos.size() == 0){
+            finish();
+            return;
         }
 
         // 处理是否是拍完照后跳转过来
